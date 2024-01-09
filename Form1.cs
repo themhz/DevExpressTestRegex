@@ -16,7 +16,8 @@ namespace testReport2
             test();
         }
 
-        string targetFile = "d:\\ProjNet2022\\applications\\Building.Project\\Building.UI\\data.el\\reports\\Building.Accessible\\AccessibleReport\\Main.docx";
+        string targetFile = @"..\\..\\..\\Main.docx";
+        string outputFile = @"..\\..\\..\\Output.docx";
         public void test()
         {
             using (RichEditDocumentServer parentWordProcessor = new RichEditDocumentServer())
@@ -24,31 +25,32 @@ namespace testReport2
                 parentWordProcessor.Document.BeginUpdate();
                 parentWordProcessor.LoadDocument(targetFile);
 
-                var regexSectionOpen = new Regex("^#.*\\((.|\\n)*?\\):");                
-                var regexSectionClose = new Regex("^#.*/");
+                var regexSectionOpen = new Regex("^#.((.|\n)*?).*:");
+                var regexSectionClose = new Regex("^#.*\\/");
 
-                List<DocumentRange> openings = new List<DocumentRange>();
-                List<DocumentRange> closings = new List<DocumentRange>();
-              
                 foreach (var paragraph in parentWordProcessor.Document.Paragraphs)
                 {
-                    var matches = parentWordProcessor.Document.FindAll(regexSectionOpen, paragraph.Range);
+                    var matchesOpen = parentWordProcessor.Document.FindAll(regexSectionOpen, paragraph.Range);
+                    foreach (var range in matchesOpen)
+                    {
+                        // Replace matched text with "target1"
+                        parentWordProcessor.Document.Replace(range, "target1");
+                    }
 
-
-                    if (matches != null && matches.Length > 0)
-                        openings.AddRange(matches);
-
-                    matches = parentWordProcessor.Document.FindAll(regexSectionClose, paragraph.Range);
-                    if (matches != null && matches.Length > 0)
-                        closings.AddRange(matches);
+                    var matchesClose = parentWordProcessor.Document.FindAll(regexSectionClose, paragraph.Range);
+                    foreach (var range in matchesClose)
+                    {
+                        // Replace matched text with "target2"
+                        parentWordProcessor.Document.Replace(range, "target2");
+                    }
                 }
 
                 parentWordProcessor.Document.EndUpdate();
-                parentWordProcessor.SaveDocument(targetFile, DocumentFormat.OpenXml);
+                parentWordProcessor.SaveDocument(outputFile, DocumentFormat.OpenXml);
 
                 this.OpenDocFile();
-                
             }
+        
         }
 
         public DocumentRange getTextRange(string search, RichEditDocumentServer wp = null)
